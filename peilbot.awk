@@ -22,7 +22,7 @@ function tell(who,msg) {
 		dump("ANTI-FLOOD " who)
 	} else {
 		delete flood[who, 1-tick]
-		print "PRIVMSG", who, COLON msg
+		print "PRIVMSG", who, COLON ferrymingelen(msg)
 	}
 }
 
@@ -164,4 +164,13 @@ function tally() {
 		DEADLINE = systime() + EXTENDEDVOTING*60
 		return result
 	}
+}
+
+function ferrymingelen(str) {
+        split(str, words)
+        str=words[1]
+        for(i=2; i <= length(words); i++) {
+                str = str (rand() >= 0.8? " ... " : " ") words[i]
+	}
+        return str
 }
