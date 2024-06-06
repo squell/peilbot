@@ -102,13 +102,15 @@ $1=="PRIVMSG" && (mentioned() || $2==IDENTITY) && split(PREFIX, user, "!") {
 		} else {
 			tell(outlet, tally())
 		}
-	} else if(trusted() && act ~ /->/) {
-		split(act, mkalias, / *-> */)
-		if(mkalias[1]==mkalias[2]) delete alias[mkalias[1]]
-		else alias[mkalias[1]]=mkalias[2]
-		tell(outlet, tally())
 	} else if(act ~ /->/) {
-		tell(nick, "helaas pindakaas")
+		if(trusted()) {
+			split(act, mkalias, / *-> */)
+			if(mkalias[1]==mkalias[2]) delete alias[mkalias[1]]
+			else alias[mkalias[1]]=mkalias[2]
+			tell(outlet, tally())
+		} else {
+			tell(nick, "helaas pindakaas")
+		}
 	} else if(has_voted[account]) {
 		tell(nick, "Je mag maar één keer stemmen")
 	} else if(systime() >= DEADLINE) {
