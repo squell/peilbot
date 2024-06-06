@@ -41,11 +41,19 @@ BEGIN {
 	if(!THRESHOLD) THRESHOLD=2
 	if(!DEADLINE)  {
 		DEADLINE=systime()+24*60*60;
-	} else if(DEADLINE ~ /^\+/) {
+	} else if(RESULT_TIME ~ /^\+/) {
 		DEADLINE=systime()+DEADLINE*60;
 	} else {
 		gsub(/[-.]/, " ", DEADLINE)
 		DEADLINE=mktime(DEADLINE " 00 00 00")
+	}
+	if(!RESULT_TIME)  {
+		RESULT_TIME=DEADLINE
+	} else if(RESULT_TIME ~ /^\+/) {
+		RESULT_TIME=systime()+RESULT_TIME*60;
+	} else {
+		gsub(/[-.]/, " ", RESULT_TIME)
+		RESULT_TIME=mktime(RESULT_TIME " 00 00 00")
 	}
 	FS=OFS=" "
 	COLON=":"
@@ -75,7 +83,7 @@ $1=="PRIVMSG" && $2==IDENTITY && $3~"^:!" && trusted() {
 		DEADLINE = systime() + $2*60
 	} else if(toupper($1)=="DIE") {
 		THRESHOLD=0
-		DEADLINE=systime()
+		RESULT_TIME=systime()
 		print "QUIT", COLON tally()
 	}
 	next
@@ -132,6 +140,7 @@ $1!="PRIVMSG" {
 
 $1==RPL_ENDOFMOTD {
 	dump("DEADLINE: "strftime(TIMEFMT, DEADLINE))
+	dump("RESULT_TIME: "strftime(TIMEFMT, RESULT_TIME))
 	dump("ONE-TIME-AUTHENTICATION PHRASE: "NONCE)
 }
 
@@ -146,8 +155,8 @@ function tally() {
 	}
 	if(total_votes <= THRESHOLD) {
 		return "Er zijn niet genoeg deelnemers aan de peiling."
-	} else if(systime() < DEADLINE) {
-		remain=DEADLINE-systime()
+	} else if(systime() < RESULT_TIME) {
+		remain=RESULT_TIME-systime()
 		return "De uitslag is er over " (remain>3600? sprintf("%d uur", remain/3600) : remain>120? sprintf("%d minuten", remain/60) : sprintf("%d seconden", remain))
 	} else {
 		result=""
@@ -163,7 +172,6 @@ function tally() {
 			}
 		}
 		sub("^; ", "", result)
-		DEADLINE = systime() + EXTENDEDVOTING*60
 		return result
 	}
 }
